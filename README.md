@@ -16,14 +16,14 @@ and avoid common problems.
 4. [Async and Await](#async-and-await)
    - [`.Important Hints about async functions`](#important-hints-about-async-functions) 
 5. [Static Methods](#static-methods)
-   - [`Promise.all`](#promiseall)
-   - [`Promise.allSettled`](#promiseallsettled)
-   - [`Promise.race`](#promiserace)
-   - [`Promise.any`](#promiseany)
+   - [`Promise.all`](#1-promiseall)
+   - [`Promise.allSettled`](#2-promiseallsettled)
+   - [`Promise.race`](#3-promiserace)
+   - [`Promise.any`](#4-promiseany)
 6. [For await of](#for-await-of)
-7. [CPU-Intensive VS I/O Operations](#CPU-Intensive-vs-I/O-Operations)
-8. [REFS](#REFS)
-9. [TO-DO](#TO-DO)
+7. [CPU-Intensive VS I/O Operations](#7-cpu-intensive-vs-io-operations-personal-opinion)
+8. [REFS](#refs)
+9. [TO-DO](#to-do)
 
 ## Introduction
 
