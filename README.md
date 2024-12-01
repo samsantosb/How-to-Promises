@@ -567,62 +567,29 @@ In this approach, you iterate over an array of Promises using a for...of loop an
 2. `for await of`
 This approach is specifically designed to work with asynchronous iterables, where each iteration automatically awaits the Promise. It simplifies handling asynchronous streams or dynamic data sources
 
-## 7. CPU-Intensive VS I/O Operations 
-I made this topic bc i see it everywhere, i see it in lots of codebases and this scales messy.
+## 7. CPU-Intensive VS I/O Operations (personal opinion)
+I made this topic bc i see it everywhere, i see it in lots of codebases and this can scale very messy.
 
-A common mistake developers make is mixing CPU-bound tasks (like data processing, sorting, encryption, or compression) with I/O-bound operations (like reading/writing files, making API calls, or database queries) in the same thread of execution. This approach not only hinders the scalability of your application but also creates inefficiencies that can lead to performance bottlenecks.
+A common mistake developers make is mixing CPU-bound tasks (like data processing, sorting, encryption, or compression) with I/O-bound operations (like reading/writing files, making API calls, or database queries) in the same block of code.
 
-## Why Should You Avoid Mixing?
-Node.js operates on a single-threaded event loop designed for non-blocking I/O. When you introduce CPU-bound tasks into the same flow as I/O operations, you block the event loop, which delays the processing of other requests.
+This often results in chaotic code and most timesDevelopers frequently use Promises incorrectly to fast solve the problem
+they are trying to.
 
+Most of the time when you are doing multiple I/O Operations you can use Promise.all/Promise.AllSettled.
 
-#### what to avoid
-```javascript
-const fs = require('fs').promises;
+If you rly want to "serialize it" you should have a function for it, it is good for logging or fail safe etc... 
 
-async function processFile(filePath) {
-  const fileData = await fs.readFile(filePath); // I/O operation
-  console.log('File read complete');
+But think twice before "mixing" standard cpu operations with I/O ones.
 
-  const processedData = fileData
-    .toString()
-    .split('\n')
-    .map((line) => line.toUpperCase()) // CPU-intensive processing
-    .join('\n');
+If you are like... Interacting with 3rd parties API and then transforming some data. I recommend you separate these steps. 
 
-  await fs.writeFile('processed-file.txt', processedData); // Another I/O operation
-  console.log('File write complete');
-}
+First you get the data with I/O calls
 
-processFile('large-file.txt');
-```
+Then you transform the data with CPU operations
 
-#### what to do
-```javascript
-async function processFile(filePath) {
-  const fileData = await fs.readFile(filePath); // I/O operation
-  console.log('File read complete');
-  processFileData(fileData); // Hand off CPU-intensive task
-}
+Then you persist the data with I/O calls
 
-function processFileData(data) {
-  const processedData = data
-    .toString()
-    .split('\n')
-    .map((line) => line.toUpperCase())
-    .join('\n');
-  console.log('Processing complete');
-  fs.writeFile('processed-file.txt', processedData)
-    .then(() => console.log('File write complete'))
-    .catch(console.error);
-}
-
-processFile('large-file.txt');
-```
-
-#### When should i mix CPU and I/O Operations ?
-When you are scripting and you rly dont need to care about performance/scaling. 
-
+Most of the time you should avoid to `I/O -> transform -> persist while looping`, unless you are scripting.
 
 ## REFS
 1. MDN Docs (https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Reference/Global_Objects/Promise)
