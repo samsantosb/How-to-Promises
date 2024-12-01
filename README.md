@@ -13,6 +13,7 @@ This repository is designed to help developers understand and apply Promises eff
    - [`.catch`](#catch)
    - [`.finally`](#finally)
 4. [Async and Await](#async-and-await)
+   - [`.Important Hints about async functions`](#important-hints-about-async-functions) 
 5. [Static Methods](#static-methods)
    - [`Promise.all`](#promiseall)
    - [`Promise.allSettled`](#promiseallsettled)
@@ -63,7 +64,7 @@ delay(1000)
 
 Promises provide several methods that allow chaining and handling asynchronous operations. These methods are part of the `Promise` prototype and operate on specific promise instances. Key methods include:
 
-#### `.then`
+### `.then`
 
 The `.then` method is used to define what happens when a promise is **fulfilled**. It receives a callback function as its argument, which is executed with the value of the resolved promise.
 
@@ -75,7 +76,7 @@ successPromise
   .then(() => console.log('Chaining works!')); // Logs: Chaining works!
 ```
 
-#### `.catch`
+### `.catch`
 
 The `.catch` method is used to handle errors or rejections. It catches any error that occurs in the promise chain.
 
@@ -86,7 +87,7 @@ errorPromise
   .catch((error) => console.error(error)); // Logs: Something went wrong
 ```
 
-#### `.finally`
+### `.finally`
 
 The ```.finally``` method executes a callback function once the promise settles, regardless of whether it was fulfilled or rejected. This is often used for cleanup operations.
 
@@ -175,7 +176,7 @@ await:
 `async` and `await`
 Also queues the callback in the microtask queue but pauses the execution of the entire async function until the Promise resolves.
 
-#### Important Hints about async functions
+### Important Hints about async functions
 
 #### 1. A async function awlays returns a promise. 
 
@@ -369,4 +370,106 @@ Task 2
 Task 1
 Finished fetching
 */
+```
+
+#### 7. Dont solve your promises inside an Array Method
+
+When working with Promises in combination with array methods like .map, .forEach, or .filter, it's common to run into issues if the Promise resolution is not properly managed. These methods do not inherently handle asynchronous operations, which can lead to unexpected behavior.
+
+Array methods are not async or promise aware
+
+refs(if you google it you will find tons, i just did it):
+1. https://stackoverflow.com/questions/64978604/async-await-map-not-awaiting-async-function-to-complete-inside-map-function-befo
+
+2. https://medium.com/dailyjs/async-loops-and-why-they-fail-part-2-f66e5ea04113
+
+##### Example of async aware .map
+
+```javascript
+async function asyncMap(array, callback) {
+  const results = [];
+  for (let i = 0; i < array.length; i++) {
+    const result = await callback(array[i], i, array); // Sequentially await each callback
+    results.push(result);
+  }
+  return results;
+}
+```
+
+## Static Methods
+
+### 1. `Promise.all`
+
+- **Definition**: `Promise.all` takes an iterable of Promises and returns a single Promise that resolves when **all of the input Promises are fulfilled**. If any Promise rejects, the returned Promise immediately rejects with the reason of the first rejection.
+- **Use Case**: Use when you need **all tasks to succeed** to proceed.
+- Promise all works with the concept of Fail Fast
+
+```javascript
+const promises = [
+  Promise.resolve('Result 1'),
+  Promise.resolve('Result 2'),
+  Promise.reject('Error 1'),
+];
+
+Promise.all(promises)
+  .then((results) => console.log('All Results:', results))
+  .catch((error) => console.error('Caught Error:', error)); // Logs: Caught Error: Error 1
+```
+
+
+### 2. `Promise.allSettled`
+
+- **Definition**: Promise.allSettled takes an iterable of Promises and returns a Promise that resolves once all input Promises settle (fulfilled or rejected). It provides the status and value/reason for each Promise.
+- **Use Case**: when you need to process results regardless of success or failure.
+- Promise allSettled works with the concept of Fail Safe, and errors as Values
+
+```javascript
+const promises = [
+  Promise.resolve('Result 1'),
+  Promise.reject('Error 1'),
+  Promise.resolve('Result 2'),
+];
+
+Promise.allSettled(promises).then((results) => {
+  console.log('All Settled:', results);
+  /** Output:
+  [
+    { status: 'fulfilled', value: 'Result 1' },
+    { status: 'rejected', reason: 'Error 1' },
+    { status: 'fulfilled', value: 'Result 2' }
+  ]
+  */
+});
+```
+
+### 3. `Promise.race`
+- **Definition**: `Promise.race` takes an iterable of Promises and returns a single Promise that resolves or rejects as soon as the first input Promise settles (either fulfills or rejects).
+- **Use Case**: Use when you need the result of the fastest task.
+
+```javascript
+const promises = [
+  new Promise((resolve) => setTimeout(() => resolve('Fast Success'), 500)),
+  new Promise((resolve) => setTimeout(() => resolve('Slow Success'), 2000)),
+  new Promise((_, reject) => setTimeout(() => reject('Fast Error'), 1000)),
+];
+
+Promise.race(promises)
+  .then((result) => console.log('First Resolved:', result)) // Logs: First Resolved: Fast Success
+  .catch((error) => console.error('First Rejected:', error));
+```
+
+### 4. `Promise.any`
+- **Definition**: `Promise.any` takes an iterable of Promises and returns a Promise that resolves as soon as any of the input Promises is fulfilled. If all Promises reject, it rejects with an AggregateError..
+- **Use Case**: Use when you need the result of the fastest task.
+
+```javascript
+const promises = [
+  Promise.reject('Error 1'),
+  Promise.reject('Error 2'),
+  Promise.resolve('First Success'),
+];
+
+Promise.any(promises)
+  .then((result) => console.log('First Success:', result)) // Logs: First Success: First Success
+  .catch((error) => console.error('All Rejected:', error)); // Logs: AggregateError: All Promises were rejected
 ```
