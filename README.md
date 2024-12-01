@@ -198,6 +198,23 @@ A subtle but important difference exists between return and return await inside 
 
 TLDR: `Use await in every layer you are coding` dont skip await on your functions
 
+```javascript
+returnWithAwait().catch(console.log) // will have returnWithAwait in the stacktrace
+returnWithoutAwait().catch(console.log) // // will not have returnWithoutAwait in the stacktrace
+
+async function returnWithAwait() {
+  return await throwAsync('with await')
+}
+
+async function returnWithoutAwait () {
+  return throwAsync('without await')
+}
+
+async function throwAsync(msg) {
+  await null // need to await at least something to be truly async :)
+  throw new Error(msg)
+}
+```
 ref: https://github.com/goldbergyoni/nodebestpractices/issues/737
 
 #### 3. Await Sequences
