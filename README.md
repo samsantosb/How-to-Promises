@@ -569,28 +569,80 @@ In this approach, you iterate over an array of Promises using a for...of loop an
 This approach is specifically designed to work with asynchronous iterables, where each iteration automatically awaits the Promise. It simplifies handling asynchronous streams or dynamic data sources
 
 ## 7. CPU-Intensive VS I/O Operations (personal opinion)
-I made this topic bc i see it everywhere, i see it in lots of codebases and this can scale very messy.
+Mixing CPU-bound tasks (like data processing or transformations) with I/O-bound tasks (like reading/writing files or API calls) in the same block of code often leads to unorganized and hard-to-read code.
 
-A common mistake developers make is mixing CPU-bound tasks (like data processing, sorting, encryption, or compression) with I/O-bound operations (like reading/writing files, making API calls, or database queries) in the same block of code.
+By separating these steps, your code becomes cleaner, easier to understand, and easier to debug.
+Think of it as a natural flow:
 
-This often results in chaotic code and most timesDevelopers frequently use Promises incorrectly to fast solve the problem
-they are trying to.
+Get the data (I/O).
+Process the data (CPU).
+Save the data (I/O).
+When you mix these operations together, it’s like cooking a meal while washing the dishes and reorganizing the kitchen at the same time—it might work for one meal, but it's chaos when scaling up! Keep your tasks structured, and future you (and your team) will thank you.
 
-Most of the time when you are doing multiple I/O Operations you can use Promise.all/Promise.AllSettled.
+What not to do 
 
-If you rly want to "serialize it" you should have a function for it, it is good for logging or fail safe etc... 
+```javascript
+const fs = require('fs').promises;
 
-But think twice before "mixing" standard cpu operations with I/O ones.
+async function processFiles(filePaths) {
+  for (const filePath of filePaths) {
+    const fileData = await fs.readFile(filePath, 'utf-8'); // I/O: leitura
+    console.log(`Arquivo lido: ${filePath}`);
 
-If you are like... Interacting with 3rd parties API and then transforming some data. I recommend you separate these steps. 
+    const processedData = fileData
+      .toUpperCase() // CPU: transformação
+      .split('\n')
+      .join(', ');
 
-First you get the data with I/O calls
+    await fs.writeFile(`processed_${filePath}`, processedData); // I/O: escrita
+    console.log(`Arquivo processado salvo: processed_${filePath}`);
+  }
+}
 
-Then you transform the data with CPU operations
+processFiles(['file1.txt', 'file2.txt']);
+```
 
-Then you persist the data with I/O calls
+what to start doing
+```javascript
+const fs = require('fs').promises;
 
-Most of the time you should avoid to `I/O -> transform -> persist while looping`, unless you are scripting.
+// Etapa 1: Lê todos os arquivos
+async function readFiles(filePaths) {
+  const fileContents = await Promise.all(
+    filePaths.map((filePath) => fs.readFile(filePath, 'utf-8'))
+  );
+  console.log('Todos os arquivos foram lidos.');
+  return fileContents;
+}
+
+// Etapa 2: Processa os dados (CPU)
+function processContents(fileContents) {
+  const processedContents = fileContents.map((content) =>
+    content.toUpperCase().split('\n').join(', ')
+  );
+  console.log('Todos os arquivos foram processados.');
+  return processedContents;
+}
+
+// Etapa 3: Salva os arquivos processados
+async function saveFiles(filePaths, processedContents) {
+  await Promise.all(
+    filePaths.map((filePath, index) =>
+      fs.writeFile(`processed_${filePath}`, processedContents[index])
+    )
+  );
+  console.log('Todos os arquivos foram salvos.');
+}
+
+// Controlador Principal
+async function processFiles(filePaths) {
+  const fileContents = await readFiles(filePaths);
+  const processedContents = processContents(fileContents);
+  await saveFiles(filePaths, processedContents);
+}
+
+processFiles(['file1.txt', 'file2.txt']);
+```
 
 ## REFS
 1. MDN Docs (https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Reference/Global_Objects/Promise)
