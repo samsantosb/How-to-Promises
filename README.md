@@ -1,7 +1,8 @@
 # How to Promises
 
 **Promises guide on Nodejs perspective.**  
-This repository is designed to help developers understand and apply Promises effectively, with a focus on building robust backend applications.
+This repository is designed to help developers understand and apply Promises effectively, helping you to develop your APIs
+and avoid common problems. 
 
 ## Table of Contents
 
@@ -19,6 +20,8 @@ This repository is designed to help developers understand and apply Promises eff
    - [`Promise.allSettled`](#promiseallsettled)
    - [`Promise.race`](#promiserace)
    - [`Promise.any`](#promiseany)
+6. [For await of](#for-await-of)
+7. [`CPU-Intensive VS I/O Operations`](#CPU-Intensive-vs-I/O-Operations)
 
 ## Introduction
 
@@ -103,7 +106,7 @@ conditionalPromise
   .finally(() => console.log('Promise settled')); // Always logs: Promise settled
 ```
 
-#### The "Tricky Thing" About `.then` and why you should avoid it
+### The "Tricky Thing" About `.then` and why you should avoid it
 
 The `.then` method schedules its callback to run asynchronously. This can lead to unexpected behavior where the execution of code after `.then` does not wait for the promise to resolve.
 
@@ -122,11 +125,11 @@ End
 Operation with .then
 */
 ```
-#### Why does this happen ?
+### Why does this happen ?
 
 The `.then` method schedules its callback to run in the microtask queue, which is processed after the current synchronous code execution completes. This means that console.log('End') runs before the .then callback executes.
 
-#### WTF is the Microtask Queue ?
+### WTF is the Microtask Queue ?
 
 The microtask queue is a high-priority task queue in the JavaScript event loop. It is where microtasks are stored, which include tasks like:
 
@@ -219,7 +222,7 @@ fetchDataSequentially();
 Start fetching data
 Data 1
 Data 2
-Finished fetching data
+Finished fetching data - this will take 2 seconds
 */
 ```
 #### Why Does This Happen?
@@ -230,24 +233,22 @@ Each await statement pauses the execution of the async function until the Promis
 When using `for...of` loops with `await`, each iteration is executed **serially**. This means the loop waits for the current iteration's Promise to resolve before moving to the next iteration.
 
 ```javascript
-async function fetchWithForLoop() {
+async function fetchSequentiallyWithForLoop() {
   console.log('Start fetching');
 
-  const tasks = [
-    new Promise((resolve) => setTimeout(() => resolve('Task 1'), 1000)),
-    new Promise((resolve) => setTimeout(() => resolve('Task 2'), 1000)),
-    new Promise((resolve) => setTimeout(() => resolve('Task 3'), 1000)),
-  ];
+  const tasks = ['Task 1', 'Task 2', 'Task 3'];
 
   for (const task of tasks) {
-    const result = await task;
-    console.log(result); // Logs: Task 1, Task 2, Task 3 (one per second)
+    const result = await new Promise((resolve) =>
+      setTimeout(() => resolve(task), 1000)
+    );
+    console.log(result); // Logs each task in order, with a delay of 1 second per task - 3
   }
 
   console.log('Finished fetching');
 }
 
-fetchWithForLoop();
+fetchSequentiallyWithForLoop();
 /** Output:
 Start fetching
 Task 1
@@ -267,22 +268,27 @@ In the fail fast approach, if any Promise in the sequence rejects, the loop stop
 async function failFast() {
   console.log('Start fetching');
 
-  const tasks = [
-    Promise.resolve('Task 1'),
-    Promise.reject('Error in Task 2'), // This will cause the loop to stop
-    Promise.resolve('Task 3'),
-  ];
+  const tasks = ['Task 1', 'Task 2', 'Task 3'];
 
   try {
     for (const task of tasks) {
-      const result = await task;
-      console.log(result);
+      // Simulate async task creation with potential failure
+      const result = await new Promise((resolve, reject) => {
+        if (task === 'Task 2') {
+          reject('Error in Task 2'); // Simulate an error for Task 2
+        }
+        setTimeout(() => resolve(task), 1000); // Simulate async task
+      });
+
+      // Log success
+      console.log(result); // Logs Task 1, then stops at Task 2
     }
   } catch (error) {
     console.error('Error caught:', error); // Logs: Error caught: Error in Task 2
+    return; // Early exit from the loop on error
   }
 
-  console.log('Finished fetching');
+  console.log('Finished fetching'); // This only logs if there are no errors
 }
 
 failFast();
@@ -290,8 +296,8 @@ failFast();
 Start fetching
 Task 1
 Error caught: Error in Task 2
-Finished fetching
 */
+
 ```
 
 #### Explanation:
@@ -307,18 +313,20 @@ In the fail safe approach, you ensure that the loop continues execution even if 
  async function failSafe() {
   console.log('Start fetching');
 
-  const tasks = [
-    Promise.resolve('Task 1'),
-    Promise.reject('Error in Task 2'), // This error is handled locally
-    Promise.resolve('Task 3'),
-  ];
+  const tasks = ['Task 1', 'Task 2', 'Task 3'];
 
   for (const task of tasks) {
     try {
-      const result = await task;
-      console.log(result);
+      const result = await new Promise((resolve, reject) => {
+        if (task === 'Task 2') {
+          reject('Error in Task 2'); // Simula erro na Task 2
+        }
+        setTimeout(() => resolve(task), 1000); // Simula uma tarefa assíncrona
+      });
+
+      console.log(result); // Logs o resultado da tarefa
     } catch (error) {
-      console.error('Error handled locally:', error); // Logs: Error handled locally: Error in Task 2
+      console.error('Error handled locally:', error); // Logs: Error handled localmente
     }
   }
 
@@ -346,31 +354,45 @@ When you initialize multiple Promises upfront and then `await` them later, they 
 
 
 ```javascript
-async function fetchInParallel() {
-  console.log('Start fetching');
-
-  // Initialize all Promises upfront
-  const task1 = new Promise((resolve) => setTimeout(() => resolve('Task 1'), 3000)); // Longer duration
-  const task2 = new Promise((resolve) => setTimeout(() => resolve('Task 2'), 1000));
-  const task3 = new Promise((resolve) => setTimeout(() => resolve('Task 3'), 500));  // Shorter duration
-
-  // Await them sequentially
-  console.log(await task1); // Logs: Task 1
-  console.log(await task2); // Logs: Task 2
-  console.log(await task3); // Logs: Task 3
-
-  console.log('Finished fetching');
+function tenSecondsPromise() {
+  return new Promise((resolve) =>
+    setTimeout(() => resolve('10 seconds'), 10000)
+  );
 }
 
-fetchInParallel();
-/** Output:
-Start fetching
-Task 3
-Task 2
-Task 1
-Finished fetching
-*/
+function twoSecondsPromise() {
+  return new Promise((resolve) =>
+    setTimeout(() => resolve('2 seconds'), 2000)
+  );
+}
+
+function oneSecondPromise() {
+  return new Promise((resolve) =>
+    setTimeout(() => resolve('1 second'), 1000)
+  );
+}
+
+async function executePromisesSimultaneously() {
+  console.time('executePromisesSimultaneously');
+
+  // Start all Promises simultaneously
+  const promise1 = tenSecondsPromise();
+  const promise2 = twoSecondsPromise();
+  const promise3 = oneSecondPromise();
+
+  // Await them sequentially
+  console.log(await promise1); // Logs: 10 seconds
+  console.log(await promise2); // Logs: 2 seconds
+  console.log(await promise3); // Logs: 1 second
+
+  console.timeEnd('executePromisesSimultaneously'); // Logs: ~10 seconds
+}
+
+executePromisesSimultaneously();
 ```
+
+In this example the log will come on the correct order bc of the await nature.
+But time time will be 10 secs, since you initialized the promises before await for them. 
 
 #### 7. Dont solve your promises inside an Array Method
 
@@ -473,3 +495,124 @@ Promise.any(promises)
   .then((result) => console.log('First Success:', result)) // Logs: First Success: First Success
   .catch((error) => console.error('All Rejected:', error)); // Logs: AggregateError: All Promises were rejected
 ```
+
+### 5. `Promise.resolve`
+- **Definition**: `Promise.resolve` is a static method that returns a Promise object that is resolved with the given value. If the value is already a Promise, it simply returns that Promise unchanged.
+- **Use Case**: `Promise.resolve` when you need to wrap a synchronous value or non-Promise object into a resolved Promise.
+
+```javascript
+const existingPromise = Promise.resolve('Already resolved');
+
+const promise = Promise.resolve(existingPromise);
+
+promise.then((result) => {
+  console.log(result); // Logs: Already resolved
+});
+```
+
+Personally i just use if for mocks
+
+### 6. `Promise.reject`
+- **Definition**: `Promise.reject` is a static method that returns a Promise object that is rejected with the specified reason..
+- **Use Case**: `Promise.reject` to create a Promise that is immediately rejected, often for testing or error-handling scenarios.
+
+```javascript
+const errorPromise = Promise.reject('Something went wrong');
+
+errorPromise.catch((error) => {
+  console.error(error); // Logs: Something went wrong
+});
+```
+
+Personally i just use if for mocks
+
+## For await of
+for await...of shines when working with asynchronous data streams, such as reading data chunks from a file or API.
+Lots of people use this in the for of await use case...
+Actually, it wont have value. You should use for await of in async data streams.
+
+```javascript
+const { Readable } = require('stream');
+
+// Create a readable stream with async iteration
+const stream = Readable.from(['Chunk 1', 'Chunk 2', 'Chunk 3'], { objectMode: true });
+
+async function processStream() {
+  for await (const chunk of stream) {
+    console.log(`Processing: ${chunk}`);
+  }
+  console.log('Stream processing complete');
+}
+
+processStream();
+/** Output:
+Processing: Chunk 1
+Processing: Chunk 2
+Processing: Chunk 3
+Stream processing complete
+*/
+```
+
+### `for of { await }` vs `for await of`
+
+1. `for...of { await }`
+In this approach, you iterate over an array of Promises using a for...of loop and explicitly use await within the loop body. Each await pauses the loop execution until the current Promise resolves.
+
+2. `for await of`
+This approach is specifically designed to work with asynchronous iterables, where each iteration automatically awaits the Promise. It simplifies handling asynchronous streams or dynamic data sources
+
+## 7. CPU-Intensive VS I/O Operations 
+I made this topic bc i see it everywhere, i see it in lots of codebases and this scales messy.
+
+A common mistake developers make is mixing CPU-bound tasks (like data processing, sorting, encryption, or compression) with I/O-bound operations (like reading/writing files, making API calls, or database queries) in the same thread of execution. This approach not only hinders the scalability of your application but also creates inefficiencies that can lead to performance bottlenecks.
+
+## Why Should You Avoid Mixing?
+Node.js operates on a single-threaded event loop designed for non-blocking I/O. When you introduce CPU-bound tasks into the same flow as I/O operations, you block the event loop, which delays the processing of other requests.
+
+
+#### what to avoid
+```javascript
+const fs = require('fs').promises;
+
+async function processFile(filePath) {
+  const fileData = await fs.readFile(filePath); // I/O operation
+  console.log('File read complete');
+
+  const processedData = fileData
+    .toString()
+    .split('\n')
+    .map((line) => line.toUpperCase()) // CPU-intensive processing
+    .join('\n');
+
+  await fs.writeFile('processed-file.txt', processedData); // Another I/O operation
+  console.log('File write complete');
+}
+
+processFile('large-file.txt');
+```
+
+#### what to do
+```javascript
+async function processFile(filePath) {
+  const fileData = await fs.readFile(filePath); // I/O operation
+  console.log('File read complete');
+  processFileData(fileData); // Hand off CPU-intensive task
+}
+
+function processFileData(data) {
+  const processedData = data
+    .toString()
+    .split('\n')
+    .map((line) => line.toUpperCase())
+    .join('\n');
+  console.log('Processing complete');
+  fs.writeFile('processed-file.txt', processedData)
+    .then(() => console.log('File write complete'))
+    .catch(console.error);
+}
+
+processFile('large-file.txt');
+```
+
+#### When should i mix CPU and I/O Operations ?
+When you are scripting and you rly dont need to care about performance/scaling. 
