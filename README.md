@@ -596,3 +596,8 @@ Most of the time you should avoid to `I/O -> transform -> persist while looping`
 2. Nodejs Docs (https://nodejs.org/docs/latest/api/)
 3. A "Lab" Repo a did last Year (https://github.com/samsantosb/Javascript-Promises)
 4. And github/stackoverflow discussions i mentioned
+
+## TODO 
+- Generators
+- Cool Abstractions with promises
+- Batching
