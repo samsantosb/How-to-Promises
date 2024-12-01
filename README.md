@@ -606,7 +606,6 @@ what to start doing
 ```javascript
 const fs = require('fs').promises;
 
-// Etapa 1: Lê todos os arquivos
 async function readFiles(filePaths) {
   const fileContents = await Promise.all(
     filePaths.map((filePath) => fs.readFile(filePath, 'utf-8'))
@@ -615,7 +614,6 @@ async function readFiles(filePaths) {
   return fileContents;
 }
 
-// Etapa 2: Processa os dados (CPU)
 function processContents(fileContents) {
   const processedContents = fileContents.map((content) =>
     content.toUpperCase().split('\n').join(', ')
@@ -624,7 +622,6 @@ function processContents(fileContents) {
   return processedContents;
 }
 
-// Etapa 3: Salva os arquivos processados
 async function saveFiles(filePaths, processedContents) {
   await Promise.all(
     filePaths.map((filePath, index) =>
@@ -634,7 +631,7 @@ async function saveFiles(filePaths, processedContents) {
   console.log('Todos os arquivos foram salvos.');
 }
 
-// Controlador Principal
+//Facade
 async function processFiles(filePaths) {
   const fileContents = await readFiles(filePaths);
   const processedContents = processContents(fileContents);
