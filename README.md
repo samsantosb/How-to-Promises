@@ -21,7 +21,8 @@ and avoid common problems.
    - [`Promise.race`](#promiserace)
    - [`Promise.any`](#promiseany)
 6. [For await of](#for-await-of)
-7. [`CPU-Intensive VS I/O Operations`](#CPU-Intensive-vs-I/O-Operations)
+7. [CPU-Intensive VS I/O Operations](#CPU-Intensive-vs-I/O-Operations)
+8. [REFS](#REFS)
 
 ## Introduction
 
@@ -62,6 +63,11 @@ delay(1000)
   .then((result) => console.log(result)) // Logs: Resolved after 1000ms
   .catch((error) => console.error(error)); // Handles any errors
 ```
+
+We are going to use the upper sintax a lot in this doc.
+The fact is that this is an easy way to emulate a promise operation..
+So when reading.. New Promise of Set Timeout Fn can be any Promise you want to resolve.
+Sometimes we are going to use Promise.resolve too with a similar purpose.
 
 ## Instance Methods
 
@@ -129,7 +135,7 @@ Operation with .then
 
 The `.then` method schedules its callback to run in the microtask queue, which is processed after the current synchronous code execution completes. This means that console.log('End') runs before the .then callback executes.
 
-### WTF is the Microtask Queue ?
+### Microtask Queue ?
 
 The microtask queue is a high-priority task queue in the JavaScript event loop. It is where microtasks are stored, which include tasks like:
 
@@ -616,3 +622,10 @@ processFile('large-file.txt');
 
 #### When should i mix CPU and I/O Operations ?
 When you are scripting and you rly dont need to care about performance/scaling. 
+
+
+## REFS
+1. MDN Docs (https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Reference/Global_Objects/Promise)
+2. Nodejs Docs (https://nodejs.org/docs/latest/api/)
+3. A "Lab" Repo a did last Year (https://github.com/samsantosb/Javascript-Promises)
+4. And github/stackoverflow discussions i mentioned
