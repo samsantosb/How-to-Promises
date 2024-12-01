@@ -41,7 +41,7 @@ So, it takes a single argument, a **function** (commonly referred to as the exec
 
 It’s common to see people using `new Promise` as a tool to transform anything into a Promise. You shouldn't. I suggest using `new Promise` the way MDN suggests.
 
-### Example: Transforming `setTimeout` into a Promise
+#### Example: Transforming `setTimeout` into a Promise
 
 The `setTimeout` function is a classic example of a callback-based asynchronous operation. Using the `Promise` constructor, we can transform it into a Promise for more manageable asynchronous workflows:
 
@@ -66,8 +66,6 @@ Promises provide several methods that allow chaining and handling asynchronous o
 ### `.then`
 
 The `.then` method is used to define what happens when a promise is **fulfilled**. It receives a callback function as its argument, which is executed with the value of the resolved promise.
-
-#### Example
 
 ```javascript
 const successPromise = Promise.resolve('Success');
@@ -108,8 +106,6 @@ conditionalPromise
 
 The `.then` method schedules its callback to run asynchronously. This can lead to unexpected behavior where the execution of code after `.then` does not wait for the promise to resolve.
 
-#### Example
-
 ```javascript
 console.log('Start');
 
@@ -141,8 +137,6 @@ Microtasks are executed immediately after the currently executing JavaScript cod
 ### How to solve this ???
 
 The tricky behavior of `.then` callbacks scheduling their execution in the **microtask queue** can often be solved by using `async/await`. This syntax provides a more synchronous-like flow for handling asynchronous operations, making the code easier to read and debug.
-
-#### Example: `async/await` in Action
 
 ```javascript
 async function main() {
@@ -183,11 +177,11 @@ Also queues the callback in the microtask queue but pauses the execution of the 
 
 ### Important Hints about async functions
 
-### 1. A async function awlays returns a promise. 
+#### 1. A async function awlays returns a promise. 
 
 So you dont need to use things like `Promise.resolve`to create a promise mock.. You can just use async functions.
 
-### 2. Stack Trace Behavior: `return vs. return await`
+#### 2. Stack Trace Behavior: `return vs. return await`
 
 A subtle but important difference exists between return and return await inside async functions. While both ultimately resolve a Promise, returning without await loses the stack trace context. This can make debugging harder when dealing with complex asynchronous workflows.
 
@@ -195,11 +189,11 @@ TLDR: `Use await in every layer you are coding` dont skip await on your function
 
 ref: https://github.com/goldbergyoni/nodebestpractices/issues/737
 
-### 3. Await Sequences
+#### 3. Await Sequences
 
 When using multiple `await` statements in an `async` function, they are executed **sequentially** by default. This means each `await` waits for the previous Promise to resolve before the next one starts.
 
-### Example: Serial Execution
+#### Example: Serial Execution
 
 ```javascript
 async function fetchDataSequentially() {
@@ -227,14 +221,12 @@ Data 2
 Finished fetching data
 */
 ```
-### Why Does This Happen?
+#### Why Does This Happen?
 Each await statement pauses the execution of the async function until the Promise resolves. This creates a serial execution where each Promise is resolved one after the other, even if they are independent.
 
-### 4. Await Sequences using for loop
+#### 4. Await Sequences using for loop
 
 When using `for...of` loops with `await`, each iteration is executed **serially**. This means the loop waits for the current iteration's Promise to resolve before moving to the next iteration.
-
-#### Example: Serial Execution in a `for...of` Loop
 
 ```javascript
 async function fetchWithForLoop() {
@@ -264,14 +256,12 @@ Finished fetching
 */
 ```
 
-### 5. Fail Fast vs Fail Safe in Await Sequences
+#### 5. Fail Fast vs Fail Safe in Await Sequences
 The behavior of the for...of loop with await can change depending on how you handle errors. Below are the two common approaches:
 
-
-### Fail Fast
+#### Fail Fast
 In the fail fast approach, if any Promise in the sequence rejects, the loop stops immediately, and the error is propagated. This is the default behavior of for...of with await.
  
-
 ```javascript
 async function failFast() {
   console.log('Start fetching');
@@ -303,12 +293,12 @@ Finished fetching
 */
 ```
 
-## Explanation:
+#### Explanation:
 
 The loop stops as soon as the Promise for Task 2 rejects.
 The error is caught in the try...catch block, but the subsequent tasks (Task 3) are not executed.
 
-## Fail Safe
+#### Fail Safe
 
 In the fail safe approach, you ensure that the loop continues execution even if one of the Promises rejects. This is done by wrapping each await in a try...catch block.
 
@@ -344,12 +334,12 @@ Finished fetching
 */
 ```
 
-## Explanation:
+#### Explanation:
 
 Each await is individually wrapped in a try...catch block, so errors in one Promise do not affect the others.
 The loop continues execution for all tasks, logging errors only for the ones that fail.
 
-### 6. Initializing Promises Before Resolving Them
+#### 6. Initializing Promises Before Resolving Them
 
 When you initialize multiple Promises upfront and then `await` them later, they are resolved simultaneous, even if you use `await` sequentially. This is because the Promises start executing as soon as they are created, regardless of when `await` is used.
 
