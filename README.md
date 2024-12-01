@@ -63,7 +63,7 @@ delay(1000)
 
 Promises provide several methods that allow chaining and handling asynchronous operations. These methods are part of the `Promise` prototype and operate on specific promise instances. Key methods include:
 
-### `.then`
+#### `.then`
 
 The `.then` method is used to define what happens when a promise is **fulfilled**. It receives a callback function as its argument, which is executed with the value of the resolved promise.
 
@@ -75,7 +75,7 @@ successPromise
   .then(() => console.log('Chaining works!')); // Logs: Chaining works!
 ```
 
-### `.catch`
+#### `.catch`
 
 The `.catch` method is used to handle errors or rejections. It catches any error that occurs in the promise chain.
 
@@ -86,7 +86,7 @@ errorPromise
   .catch((error) => console.error(error)); // Logs: Something went wrong
 ```
 
-### `.finally`
+#### `.finally`
 
 The ```.finally``` method executes a callback function once the promise settles, regardless of whether it was fulfilled or rejected. This is often used for cleanup operations.
 
@@ -102,7 +102,7 @@ conditionalPromise
   .finally(() => console.log('Promise settled')); // Always logs: Promise settled
 ```
 
-### The "Tricky Thing" About `.then` and why you should avoid it
+#### The "Tricky Thing" About `.then` and why you should avoid it
 
 The `.then` method schedules its callback to run asynchronously. This can lead to unexpected behavior where the execution of code after `.then` does not wait for the promise to resolve.
 
@@ -121,11 +121,11 @@ End
 Operation with .then
 */
 ```
-### Why does this happen ?
+#### Why does this happen ?
 
 The `.then` method schedules its callback to run in the microtask queue, which is processed after the current synchronous code execution completes. This means that console.log('End') runs before the .then callback executes.
 
-### WTF is the Microtask Queue ?
+#### WTF is the Microtask Queue ?
 
 The microtask queue is a high-priority task queue in the JavaScript event loop. It is where microtasks are stored, which include tasks like:
 
@@ -134,7 +134,7 @@ Calling .then, .catch, and .finally handlers.
 Operations from APIs such as queueMicrotask.
 Microtasks are executed immediately after the currently executing JavaScript code completes and before any tasks in the macrotask queue (e.g., setTimeout or setImmediate) are processed. This behavior ensures that Promise handlers run as soon as possible, but still asynchronously.
 
-### How to solve this ???
+#### How to solve this ???
 
 The tricky behavior of `.then` callbacks scheduling their execution in the **microtask queue** can often be solved by using `async/await`. This syntax provides a more synchronous-like flow for handling asynchronous operations, making the code easier to read and debug.
 
@@ -155,17 +155,17 @@ main();
 
 When await is used, it also relies on the microtask queue to resume execution. However, unlike .then, await pauses the execution of the entire function it is in until the Promise resolves. This makes the flow appear more synchronous and easier to follow.
 
-### Async and Await
+## Async and Await
 
 `async` and `await` are modern JavaScript features introduced in ES2017 (ES8). They provide a cleaner and more intuitive way to work with Promises, allowing asynchronous code to be written in a synchronous-like manner. This is particularly useful in Node.js for handling asynchronous workflows such as file I/O, API requests, and database queries.
 
-### How `async` and `await` work
+#### How `async` and `await` work
 
 1. `async` Functions: Declaring a function as async means it will always return a Promise, even if the function body does not explicitly return one.
 
 2. `await` Keyword: Inside an async function, await pauses the execution of the function until the awaited Promise resolves. This ensures sequential execution of asynchronous code.
 
-### Main Difs with `.then`
+#### Main Difs with `.then`
 
 `.then`:
 Queues the callback in the microtask queue.
@@ -175,7 +175,7 @@ await:
 `async` and `await`
 Also queues the callback in the microtask queue but pauses the execution of the entire async function until the Promise resolves.
 
-### Important Hints about async functions
+#### Important Hints about async functions
 
 #### 1. A async function awlays returns a promise. 
 
