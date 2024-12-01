@@ -23,6 +23,7 @@ and avoid common problems.
 6. [For await of](#for-await-of)
 7. [CPU-Intensive VS I/O Operations](#CPU-Intensive-vs-I/O-Operations)
 8. [REFS](#REFS)
+9. [TO-DO](#TO-DO)
 
 ## Introduction
 
@@ -597,7 +598,7 @@ Most of the time you should avoid to `I/O -> transform -> persist while looping`
 3. A "Lab" Repo a did last Year (https://github.com/samsantosb/Javascript-Promises)
 4. And github/stackoverflow discussions i mentioned
 
-## TODO 
+## TO-DO 
 - Generators
 - Cool Abstractions with promises
 - Batching
