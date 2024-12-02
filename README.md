@@ -188,7 +188,7 @@ Also queues the callback in the microtask queue but pauses the execution of the 
 
 ### Important Hints about async functions
 
-#### 1. A async function awlays returns a promise. 
+#### 1. A async function always returns a promise. 
 
 So you dont need to use things like `Promise.resolve`to create a promise mock.. You can just use async functions.
 
