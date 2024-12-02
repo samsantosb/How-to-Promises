@@ -113,7 +113,7 @@ conditionalPromise
   .finally(() => console.log('Promise settled')); // Always logs: Promise settled
 ```
 
-### The "Tricky Thing" About `.then` and why you should avoid it
+#### The "Tricky Thing" About `.then` and why you should avoid it
 
 The `.then` method schedules its callback to run asynchronously. This can lead to unexpected behavior where the execution of code after `.then` does not wait for the promise to resolve.
 
@@ -132,11 +132,11 @@ End
 Operation with .then
 */
 ```
-### Why does this happen ?
+#### Why does this happen ?
 
 The `.then` method schedules its callback to run in the microtask queue, which is processed after the current synchronous code execution completes. This means that console.log('End') runs before the .then callback executes.
 
-### Microtask Queue ?
+#### Microtask Queue ?
 
 The microtask queue is a high-priority task queue in the JavaScript event loop. It is where microtasks are stored, which include tasks like:
 
