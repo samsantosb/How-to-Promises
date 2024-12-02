@@ -627,7 +627,7 @@ async function readFiles(filePaths) {
   const fileContents = await Promise.all(
     filePaths.map((filePath) => fs.readFile(filePath, 'utf-8'))
   );
-  console.log('Todos os arquivos foram lidos.');
+
   return fileContents;
 }
 
@@ -635,7 +635,7 @@ function processContents(fileContents) {
   const processedContents = fileContents.map((content) =>
     content.toUpperCase().split('\n').join(', ')
   );
-  console.log('Todos os arquivos foram processados.');
+
   return processedContents;
 }
 
@@ -645,7 +645,6 @@ async function saveFiles(filePaths, processedContents) {
       fs.writeFile(`processed_${filePath}`, processedContents[index])
     )
   );
-  console.log('Todos os arquivos foram salvos.');
 }
 
 //Facade
