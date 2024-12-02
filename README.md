@@ -164,7 +164,9 @@ async function main() {
 main();
 ```
 
-When await is used, it also relies on the microtask queue to resume execution. However, unlike .then, await pauses the execution of the entire function it is in until the Promise resolves. This makes the flow appear more synchronous and easier to follow.
+When await is used, it also relies on the microtask queue to resume execution. 
+However, unlike .then, await "pauses"(will be better explained in the next topic)
+the execution of the entire function it is in until the Promise resolves. This makes the flow appear more synchronous and easier to follow.
 
 ## Async and Await
 
@@ -174,17 +176,16 @@ When await is used, it also relies on the microtask queue to resume execution. H
 
 1. `async` Functions: Declaring a function as async means it will always return a Promise, even if the function body does not explicitly return one.
 
-2. `await` Keyword: Inside an async function, await pauses the execution of the function until the awaited Promise resolves. This ensures sequential execution of asynchronous code.
+2. `await` Keyword: Inside an async function, await acts as syntax sugar that allows writing asynchronous code in a sequential style. It instructs the JavaScript engine to wait for a Promise to resolve or reject, restructuring the function so that the remaining code is executed as a continuation (callback) once the Promise settles. Importantly, this process does not block the event loop, allowing other tasks to proceed concurrently.
 
 #### Main Difs with `.then`
 
 `.then`:
-Queues the callback in the microtask queue.
-Does not pause surrounding code execution.
-await:
+Adds the provided callback to the microtask queue, which will be executed after the current synchronous code finishes.
 
 `async` and `await`
-Also queues the callback in the microtask queue but pauses the execution of the entire async function until the Promise resolves.
+Similar to .then, it schedules the continuation of the function in the microtask queue after the awaited Promise settles.
+Unlike .then, it restructures the function to appear synchronous, effectively postponing the execution of subsequent code within the async function until the Promise resolves or rejects.
 
 ### Important Hints about async functions
 
@@ -250,7 +251,7 @@ Finished fetching data - this will take 2 seconds
 */
 ```
 #### Why Does This Happen?
-Each await statement pauses the execution of the async function until the Promise resolves. This creates a serial execution where each Promise is resolved one after the other, even if they are independent.
+Each await statement "pauses" the execution of the async function until the Promise resolves. This creates a serial execution where each Promise is resolved one after the other, even if they are independent.
 
 #### 4. Await Sequences using for loop
 
@@ -580,7 +581,7 @@ Stream processing complete
 ### `for of { await }` vs `for await of`
 
 1. `for...of { await }`
-In this approach, you iterate over an array of Promises using a for...of loop and explicitly use await within the loop body. Each await pauses the loop execution until the current Promise resolves.
+In this approach, you iterate over an array of Promises using a for...of loop and explicitly use await within the loop body. Each await "pauses" the loop execution until the current Promise resolves.
 
 2. `for await of`
 This approach is specifically designed to work with asynchronous iterables, where each iteration automatically awaits the Promise. It simplifies handling asynchronous streams or dynamic data sources
