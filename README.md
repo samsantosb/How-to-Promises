@@ -191,7 +191,7 @@ Unlike .then, it restructures the function to appear synchronous, effectively po
 
 #### 1. A async function always returns a promise. 
 
-So you dont need to use things like `Promise.resolve`to create a promise mock.. You can just use async functions.
+So you dont need to use things like `Promise.resolve`to create a promise mock. You can just use async functions.
 
 #### 2. Stack Trace Behavior: `return vs. return await`
 
